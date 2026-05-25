@@ -5,7 +5,8 @@ public class ContaBancaria {
     private String cliente;
     private int numeroConta;
     protected double Saldo;
-
+    
+    // metodos:
     public String sacar(double valor){
         if (valor > 0 && valor <= Saldo) {
             Saldo -= valor;
@@ -28,11 +29,13 @@ public class ContaBancaria {
         }
     }
 
+    //setter
     public void setClient(String cliente, int numeroConta) {
         this.cliente = cliente;
         this.numeroConta = numeroConta;
     }
-
+    
+    //getters:
     public String getClient() {
         return cliente;
     }

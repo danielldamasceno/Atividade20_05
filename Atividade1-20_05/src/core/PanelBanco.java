@@ -25,21 +25,24 @@ import java.util.Map;
 import type.ContaEspecial;
 import type.ContaPoupança;
 
+//Qualquer semelhança ao banco do brasil é mera coincidencia...
+
 public class PanelBanco extends JPanel {
 
+    //cria um arquivo .csv para armazenar o mapa que foi construdido durante funcionamento do programa.
     private static final String DATA_FILE = "contas.csv";
-    private final Map<Integer, ContaBancaria> contas = new HashMap<>();
+    private final Map<Integer, ContaBancaria> contas = new HashMap<>(); // o mapa para armazenar as contas
 
-    // Componentes principais
+    // Botões principais
     private final JButton btnAddConta = new JButton("Adicionar Conta");
     private final JButton btnSacar = new JButton("Sacar");
     private final JButton btnDepositar = new JButton("Depositar");
     private final JButton btnInfo = new JButton("Obter Informações");
     private final JButton btnExit = new JButton("Sair");
 
-    // Painéis de formulário (reutilizáveis)
     private final javax.swing.JPanel formPanel = new javax.swing.JPanel();
 
+    //definição do painel
     public PanelBanco() {
         int screenWidth = 800;
         int screenHeight = 480;
@@ -86,12 +89,14 @@ public class PanelBanco extends JPanel {
         loadContasFromFile();
     }
 
+    //limpar o form
     private void clearForm() {
         formPanel.removeAll();
         formPanel.revalidate();
         formPanel.repaint();
     }
 
+    /** abre o form para criar conta */
     private void showAddAccountForm() {
         clearForm();
 
@@ -164,6 +169,7 @@ public class PanelBanco extends JPanel {
         });
     }
 
+    /** abre o form para transações */
     private void showTransactionForm(String operacao) {
         clearForm();
 
@@ -231,6 +237,7 @@ public class PanelBanco extends JPanel {
         });
     }
 
+    /** abre o form para mostrar informações da conta escolhida */
     private void showInfoForm() {
         clearForm();
 
@@ -239,13 +246,41 @@ public class PanelBanco extends JPanel {
         JTextField txtNumero = new JTextField();
         txtNumero.setBounds(150, 20, 170, 25);
 
+        JLabel lblDiaInicio = new JLabel("Dia do depósito:");
+        lblDiaInicio.setBounds(20, 60, 120, 25);
+        JTextField txtDiaInicio = new JTextField();
+        txtDiaInicio.setBounds(150, 60, 170, 25);
+
+        JLabel lblMesInicio = new JLabel("Mês do depósito:");
+        lblMesInicio.setBounds(20, 100, 120, 25);
+        JTextField txtMesInicio = new JTextField();
+        txtMesInicio.setBounds(150, 100, 170, 25);
+
+        JLabel lblDiaFinal = new JLabel("Dia de checagem:");
+        lblDiaFinal.setBounds(20, 140, 120, 25);
+        JTextField txtDiaFinal = new JTextField();
+        txtDiaFinal.setBounds(150, 140, 170, 25);
+
+        JLabel lblMesFinal = new JLabel("Mês de checagem:");
+        lblMesFinal.setBounds(20, 180, 120, 25);
+        JTextField txtMesFinal = new JTextField();
+        txtMesFinal.setBounds(150, 180, 170, 25);
+
         JButton btnBuscar = new JButton("Buscar");
-        btnBuscar.setBounds(150, 60, 120, 30);
+        btnBuscar.setBounds(150, 220, 120, 30);
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setBounds(280, 60, 100, 30);
+        btnCancelar.setBounds(280, 220, 100, 30);
 
         formPanel.add(lblNumero);
         formPanel.add(txtNumero);
+        formPanel.add(lblDiaInicio);
+        formPanel.add(txtDiaInicio);
+        formPanel.add(lblMesInicio);
+        formPanel.add(txtMesInicio);
+        formPanel.add(lblDiaFinal);
+        formPanel.add(txtDiaFinal);
+        formPanel.add(lblMesFinal);
+        formPanel.add(txtMesFinal);
         formPanel.add(btnBuscar);
         formPanel.add(btnCancelar);
 
@@ -269,6 +304,33 @@ public class PanelBanco extends JPanel {
                 JOptionPane.showMessageDialog(this, "Conta não encontrada.", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+            if (conta instanceof ContaPoupança) {
+                String diaInicioStr = txtDiaInicio.getText().trim();
+                String mesInicioStr = txtMesInicio.getText().trim();
+                String diaFinalStr = txtDiaFinal.getText().trim();
+                String mesFinalStr = txtMesFinal.getText().trim();
+                if (diaInicioStr.isEmpty() || mesInicioStr.isEmpty() || diaFinalStr.isEmpty() || mesFinalStr.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Informe dia e mês de início e de checagem.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                int diaInicio, mesInicio, diaFinal, mesFinal;
+                try {
+                    diaInicio = Integer.parseInt(diaInicioStr);
+                    mesInicio = Integer.parseInt(mesInicioStr);
+                    diaFinal = Integer.parseInt(diaFinalStr);
+                    mesFinal = Integer.parseInt(mesFinalStr);
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(this, "Valores de dia/mês inválidos.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if(((ContaPoupança) conta).checkDia(diaInicio, mesInicio, diaFinal, mesFinal) == false) {
+                    JOptionPane.showMessageDialog(this, "Datas inválidas.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                    
+                }
+            }
+
             String info = "Cliente: " + conta.getClient() + "\n" +
                           "Número da Conta: " + conta.getNumeroConta() + "\n" +
                           "Saldo: R$ " + String.format("%.2f", conta.getSaldo()) + "\n" +
@@ -278,6 +340,7 @@ public class PanelBanco extends JPanel {
         });
     }
 
+    /** Salva as contas que estão no mapa em um arquivo de texto */
     public void saveContasToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE))) {
             for (ContaBancaria conta : contas.values()) {
@@ -300,6 +363,7 @@ public class PanelBanco extends JPanel {
         }
     }
 
+    /** Carrega as contas do arquivo de texto pro mapa */
     private void loadContasFromFile() {
         try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
             String line;

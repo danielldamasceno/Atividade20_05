@@ -5,7 +5,8 @@ import core.ContaBancaria;
 public class ContaEspecial extends ContaBancaria {
     private double Limite = 1000.0;
 
-        @Override
+    @Override //sobrepoe o metodo sacar original
+    //metodo:
     public String sacar(double valor) {
         if (valor > 0 && valor <= (Limite + Saldo)) {
             Saldo -= valor;
@@ -18,7 +19,8 @@ public class ContaEspecial extends ContaBancaria {
             }
         }
     }
-
+    
+    //getters e setters
     public double getLimite() {
         return Limite;
     }
